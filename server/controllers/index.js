@@ -49,7 +49,7 @@ const readAllCats = (req, res, callback) => {
 // readAllDogs method
 const readAllDogs = (req, res, callback) => {
   Dog.find(callback).lean();
-}
+};
 
 
 // function to find a specific cat on request.
@@ -89,7 +89,7 @@ const readDog = (req, res) => {
   };
 
   Dog.findByName(name1, callback);
-}
+};
 
 // function to handle requests to the page1 page
 // controller functions in Express receive the full HTTP request
@@ -126,12 +126,12 @@ const hostPage2 = (req, res) => {
 // controller functions in Express receive the full HTTP request
 // and a pre-filled out response object to send
 const hostPage3 = (req, res) => {
-    // res.render takes a name of a page to render.
-    // These must be in the folder you specified as views in your main app.js file
-    // Additionally, you don't need .jade because you registered the file type
-    // in the app.js as jade. Calling res.render('index')
-    // actually calls index.jade. A second parameter of JSON can be passed
-    // into the jade to be used as variables with #{varName}
+  // res.render takes a name of a page to render.
+  // These must be in the folder you specified as views in your main app.js file
+  // Additionally, you don't need .jade because you registered the file type
+  // in the app.js as jade. Calling res.render('index')
+  // actually calls index.jade. A second parameter of JSON can be passed
+  // into the jade to be used as variables with #{varName}
   res.render('page3');
 };
 
@@ -227,19 +227,19 @@ const setDogName = (req, res) => {
   // create a new object of CatModel with the object to save
   const newDog = new Dog(dogData);
 
-   // create new save promise for the database
-   const savePromise = newDog.save();
+  // create new save promise for the database
+  const savePromise = newDog.save();
 
-   savePromise.then(() => {
-     // return success
-     res.json({ name: newDog.name, breed: newDog.breed, age: newDog.age });
-   });
- 
-   // if error, return it
-   savePromise.catch((err) => res.status(500).json({ err }));
+  savePromise.then(() => {
+    // return success
+    res.json({ name: newDog.name, breed: newDog.breed, age: newDog.age });
+  });
+
+  // if error, return it
+  savePromise.catch((err) => res.status(500).json({ err }));
 
   return res;
-}
+};
 
 
 // function to handle requests search for a name and return the object
@@ -286,15 +286,22 @@ const searchDogName = (req, res) => {
     return res.status(400).json({ error: 'Name is required to perform a search' });
   }
   return Dog.findByName(req.query.name, (er, doc) => {
+    // errors, handle them
+    if (er) {
+      return res.status(500).json({ er }); // if error, return it
+    }
+
     if (!doc) {
       return res.json({ error: 'No dogs found' });
     }
 
-    doc.age++;
-    const savePromise = doc.save();
+    // make a temporary copy of the retrieved dog (no pun intended)
+    const copy = doc;
+    copy.age = doc.age + 1;
+    const savePromise = copy.save();
 
     // send back the name as a success for now
-    savePromise.then(() => res.json({ name: doc.name, breed: doc.breed, age: doc.age }));
+    savePromise.then(() => res.json({ name: copy.name, breed: copy.breed, age: copy.age }));
 
     // if save error, just return an error for now
     savePromise.catch((err) => res.status(500).json({ err }));
